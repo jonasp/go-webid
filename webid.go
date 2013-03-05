@@ -4,12 +4,9 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"errors"
-	"io/ioutil"
 	"math/big"
-	"net/http"
 	"strconv"
-	"strings"
-	"turtle/parse"
+	"bitbucket.org/ww/goraptor"
 )
 
 type tripple struct {
@@ -43,8 +40,8 @@ func Validate(tls *tls.ConnectionState) (*id, error) {
 
 		var keyId string
 		for _, t := range tripples {
-			if t.subject == "<http://selfdual.com/webid#me>" &&
-				t.predicate == "<http://www.w3.org/ns/auth/cert#key>" {
+			if t.subject == "http://selfdual.com/webid#me" &&
+				t.predicate == "http://www.w3.org/ns/auth/cert#key" {
 				keyId = t.object
 			}
 		}
@@ -53,16 +50,14 @@ func Validate(tls *tls.ConnectionState) (*id, error) {
 		var exp int
 		for _, t := range tripples {
 			if t.subject == keyId {
-				if t.predicate == "<http://www.w3.org/ns/auth/cert#modulus>" {
-					modString := strings.Split(t.object, "^^")[0]
-					_, ok := mod.SetString(modString[1:len(modString)-1], 16)
+				if t.predicate == "http://www.w3.org/ns/auth/cert#modulus" {
+					_, ok := mod.SetString(t.object, 16)
 					if !ok {
 						return nil, errors.New("invalid modulus in WebID")
 					}
 				}
-				if t.predicate == "<http://www.w3.org/ns/auth/cert#exponent>" {
-					expString := strings.Split(t.object, "^^")[0]
-					exp64, err := strconv.ParseInt(expString[1:len(expString)-1], 10, 0)
+				if t.predicate == "http://www.w3.org/ns/auth/cert#exponent" {
+					exp64, err := strconv.ParseInt(t.object, 10, 0)
 					if err != nil {
 						return nil, err
 					}
@@ -79,22 +74,18 @@ func Validate(tls *tls.ConnectionState) (*id, error) {
 }
 
 func parseURI(s string) ([]tripple, error) {
-	resp, err := http.Get(s)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
+	parser := goraptor.NewParser("turtle")
+	defer parser.Free()
+
 	var tripples []tripple
-	ch := parse.Parse("test", string(body))
+	ch := parser.ParseUri(s, "")
 	for v := range ch {
-		if v.Ok == false {
-			return nil, errors.New("could not parse webid")
-		}
-		tripples = append(tripples, tripple{v.Subject, v.Predicate, v.Object})
+		tripples = append(tripples, tripple{
+			v.Subject.String(),
+			v.Predicate.String(),
+			v.Object.String(),
+		})
 	}
+
 	return tripples, nil
 }
