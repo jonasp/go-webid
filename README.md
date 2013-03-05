@@ -1,7 +1,15 @@
 # WebID for GO
 
 A basic library to validate a WebID.
-The only function so far is `webid.Validate(tls *tls.ConnectionState)` which should be called in the handler function. It returns a (\*id, err) with the subjectAltName in `id.Name` and result of the validation in `id.Valid`.
+The only function so far is
+```go
+webid.Validate(tls *tls.ConnectionState)
+```
+ which should be called in the handler function. It returns
+```go
+(*id, err)
+```
+with the subjectAltName in `id.Name` and result of the validation in `id.Valid`.
 
 ## Example
 
