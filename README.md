@@ -1,3 +1,10 @@
+# WebID for GO
+
+A basic library to validate a WebID.
+The only function so far is `webid.Validate(tls *tls.ConnectionState)`
+
+## Example
+
 ```go
 package main
 
