@@ -43,7 +43,7 @@ func Validate(tls *tls.ConnectionState) (*id, error) {
 
 		var keyId string
 		for _, t := range tripples {
-			if t.subject == "<http://selfdual.com/webid#me>" &&
+			if t.subject == cert.URIs[0] &&
 				t.predicate == "<http://www.w3.org/ns/auth/cert#key>" {
 				keyId = t.object
 			}
