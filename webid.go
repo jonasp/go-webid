@@ -23,17 +23,17 @@ func Validate(tls *tls.ConnectionState) (*id, error) {
 		return nil, errors.New("no certificate")
 	}
 
-	in := tls.PeerCertificates[0]
-	cert, err := parseX509Cert(in)
-	if err != nil {
-		return nil, err
+	cert := tls.PeerCertificates[0]
+
+	if len(cert.URIs) == 0 {
+		return nil, errors.New("no subjectAltName")
 	}
 
-	out := id{cert.subjectAltName, false}
+	out := id{cert.URIs[0], false}
 
-	switch pub := cert.publicKey.(type) {
+	switch pub := cert.PublicKey.(type) {
 	case *rsa.PublicKey:
-		tripples, err := parseURI(cert.subjectAltName)
+		tripples, err := parseURI(cert.URIs[0])
 		if err != nil {
 			return nil, err
 		}
