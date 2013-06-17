@@ -74,7 +74,7 @@ func Validate(tls *tls.ConnectionState) (*id, error) {
 }
 
 func parseURI(s string) ([]tripple, error) {
-	parser := goraptor.NewParser("turtle")
+	parser := goraptor.NewParser("guess")
 	defer parser.Free()
 
 	var tripples []tripple
